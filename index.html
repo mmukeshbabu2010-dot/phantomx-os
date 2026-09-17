@@ -1,33 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Primary Search Engine Meta -->
-<meta name="description" content="PhantomX OS v1.2 — Interactive cyberdeck terminal HUD simulator with live telemetry, CCTV bypass vectors, and Web Audio SFX.">
-<meta name="keywords" content="PhantomX OS, Cyberdeck, Terminal Simulator, Matrix Rain, Web Audio API, Hacker Simulator, HTML5 Game">
-<meta name="author" content="mmukeshbabu2010-dot">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- Open Graph / Discord / Facebook Preview -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://mmukeshbabu2010-dot.github.io/phantomx-os/">
-<meta property="og:title" content="PhantomX OS v1.2 — Modular Cyberdeck Simulator">
-<meta property="og:description" content="Experience a web-based hacker HUD terminal featuring breach triggers, real-time trace monitors, and Web Audio API alarms.">
-
-<!-- Twitter Card Preview -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="PhantomX OS v1.2 — Modular Cyberdeck">
-<meta name="twitter:description" content="Interactive cyberpunk terminal running directly in your browser on GitHub Pages.">
   <meta charset="UTF-8">
-  <title>PhantomX OS v1.2 — Modular Cyberdeck</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhantomX OS v1.3 — Modular Cyberdeck</title>
+
+  <!-- Meta Tags for SEO and Social Previews -->
+  <meta name="description" content="PhantomX OS v1.3 — Interactive cyberdeck terminal HUD simulator with custom CLI, telemetry, CCTV feeds, and Web Audio SFX.">
+  <meta name="keywords" content="PhantomX OS, Cyberdeck, Terminal Simulator, Matrix Rain, Web Audio API, Hacker HUD">
+  <meta property="og:title" content="PhantomX OS v1.3 — Cyberdeck Simulator">
+  <meta property="og:description" content="Web-based cyberpunk terminal featuring CLI commands, real-time audio synthesis, and HUD themes.">
+
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="theme-matrix">
   <canvas id="matrix-canvas"></canvas>
 
   <div class="hud-grid">
-    <!-- OS Header -->
+    <!-- Header -->
     <header class="hud-header">
-      <span>PHANTOMX OS v1.2 [DIRECTOR'S CUT]</span>
+      <span>PHANTOMX OS v1.3</span>
       <span id="target-header">TARGET: [SYS_MAINFRAME]</span>
       <span>STATUS: <span id="status-tag">ONLINE</span></span>
     </header>
@@ -40,17 +32,20 @@
         <div>NET BANDWIDTH: <span id="net">1.8 GB/s</span></div>
         <div>ENCRYPTION: AES-256-GCM</div>
         <br>
-        <div>[BUFFER OVERFLOW]</div>
         <div id="bar-cpu">[███████░░░░░░░]</div>
       </div>
     </div>
 
-    <!-- Main Terminal Stream -->
-    <div class="win">
+    <!-- Main Terminal Stream & CLI Input -->
+    <div class="win" style="display: flex; flex-direction: column;">
       <div class="win-title"><span>TERMINAL EXPLOIT STREAM</span><span>TTY_01</span></div>
-      <div class="win-body" id="term-log" style="overflow-y: auto; height: 100%;">
-        <div>PhantomX Kernel v1.2 Initialized.</div>
-        <div>Press any key to stream code, or use hotkeys ALT+1 / ALT+2.</div>
+      <div class="win-body" id="term-log" style="overflow-y: auto; flex-grow: 1;">
+        <div>PhantomX Kernel v1.3 Initialized.</div>
+        <div>Type <b>help</b> to list available CLI commands.</div>
+      </div>
+      <div class="cli-bar">
+        <span>user@phantomx:~$</span>
+        <input type="text" id="cli-input" placeholder="Enter command..." autofocus autocomplete="off">
       </div>
     </div>
 
@@ -65,7 +60,7 @@
       </div>
     </div>
 
-    <!-- Global Trace Monitor -->
+    <!-- Trace Monitor -->
     <div class="win" style="grid-column: 1 / -1;">
       <div class="win-title"><span>GLOBAL TRACE MONITOR</span><span>REAL-TIME</span></div>
       <div class="win-body">
@@ -74,16 +69,15 @@
       </div>
     </div>
 
-    <!-- Director's Control Panel Dock -->
+    <!-- Director Panel Dock -->
     <div class="director-dock">
-      <span>🎬 <b>DIRECTOR PANEL:</b></span>
+      <span>🎬 <b>SETTINGS:</b></span>
       <label>Speed: <input type="range" id="speed-slider" min="1" max="10" value="5"></label>
-      <label>Target: 
-        <select id="target-select" onchange="updateTarget(this.value)">
-          <option value="SYS_MAINFRAME">SYS_MAINFRAME</option>
-          <option value="SATELLITE_LINK">SATELLITE_LINK</option>
-          <option value="CENTRAL_BANK">CENTRAL_BANK</option>
-          <option value="PENTAGON_GRID">PENTAGON_GRID</option>
+      <label>Theme: 
+        <select id="theme-select" onchange="changeTheme(this.value)">
+          <option value="theme-matrix">Matrix Green</option>
+          <option value="theme-amber">Retro Amber</option>
+          <option value="theme-cyberpunk">Cyberpunk Neon</option>
         </select>
       </label>
       <label>Audio SFX: <input type="checkbox" id="sfx-toggle" checked></label>
