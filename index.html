@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PhantomX OS v1.0</title>
+  <style>
+    :root { --green: #00ff66; --dark: #030a05; --border: #005522; }
+    * { box-sizing: border-box; font-family: 'Courier New', monospace; }
+    body { margin: 0; background: var(--dark); color: var(--green); overflow: hidden; height: 100vh; }
+
+    /* CRT Scanline Effect */
+    body::before {
+      content: " "; display: block; position: absolute; inset: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+      background-size: 100% 3px; z-index: 10; pointer-events: none;
+    }
+
+    #matrix-canvas { position: fixed; inset: 0; opacity: 0.2; z-index: 0; }
+
+    .hud-grid {
+      display: grid; grid-template-columns: 280px 1fr 320px;
+      grid-template-rows: 40px 1fr 220px; gap: 10px;
+      height: 100vh; padding: 10px; position: relative; z-index: 1;
+    }
+
+    .win {
+      background: rgba(2, 16, 8, 0.88); border: 1px solid var(--border);
+      box-shadow: 0 0 12px rgba(0, 255, 102, 0.15); display: flex; flex-direction: column;
+    }
+    .win-title {
+      background: #00220f; padding: 6px 12px; font-weight: bold;
+      font-size: 12px; border-bottom: 1px solid var(--border);
+      color: #fff; text-shadow: 0 0 5px var(--green);
+    }
+    .win-body { padding: 12px; flex: 1; overflow: hidden; text-shadow: 0 0 4px var(--green); }
+
+    .hud-header {
+      grid-column: 1 / -1; background: #00180a; border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
+      font-weight: bold; text-shadow: 0 0 8px var(--green);
+    }
+
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 99;
+      display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.2s;
+    }
+    .overlay.active { opacity: 1; pointer-events: auto; }
+    .alert-box {
+      border: 4px solid var(--green); color: var(--green); padding: 40px;
+      font-size: 42px; font-weight: bold; text-shadow: 0 0 20px var(--green);
+      box-shadow: 0 0 40px var(--green); background: #000;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix-canvas"></canvas>
+
+  <div class="hud-grid">
+    <header class="hud-header">
+      <span>PhantomX OS v1.0</span>
+      <span id="system-status">STATUS: ONLINE [PRESS ALT+1 OR ALT+2]</span>
+    </header>
+
+    <div class="win">
+      <div class="win-title">TARGET TELEMETRY</div>
+      <div class="win-body" id="telemetry">
+        <div>CPU LOAD: <span id="cpu">34%</span></div>
+        <div>NET SPEED: <span id="net">1.2 GB/s</span></div>
+        <div>ACTIVE THREADS: <span id="threads">128</span></div>
+        <br>
+        <div id="bar-cpu">[██████░░░░░░░░]</div>
+      </div>
+    </div>
+
+    <div class="win">
+      <div class="win-title">MAIN TERMINAL INTERFACE</div>
+      <div class="win-body" id="term-log" style="overflow-y: auto;">
+        <div>PhantomX Kernel v1.0 Loaded.</div>
+        <div>System initialized successfully.</div>
+      </div>
+    </div>
+
+    <div class="win">
+      <div class="win-title">HASH CRACKER</div>
+      <div class="win-body" id="hash-log" style="font-size: 11px; opacity: 0.8;">
+        <div>Searching hashes...</div>
+      </div>
+    </div>
+
+    <div class="win" style="grid-column: 1 / -1;">
+      <div class="win-title">GLOBAL TRACE MONITOR</div>
+      <div class="win-body">
+        <div>TRACE LEVEL: <span id="trace-val">0%</span> [SECURE]</div>
+        <div id="trace-bar" style="color: var(--green);">[--------------------------------------------------]</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="modal">
+    <div class="alert-box" id="modal-text">ACCESS GRANTED</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const chars = '0123456789ABCDEFABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const drops = Array(Math.floor(canvas.width / 16)).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00ff66';
+      ctx.font = '14px monospace';
+      drops.forEach((y, i) => {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(text, i * 16, y * 16);
+        if (y * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      });
+    }
+    setInterval(drawMatrix, 33);
+
+    setInterval(() => {
+      const cpu = Math.floor(Math.random() * 40) + 30;
+      document.getElementById('cpu').innerText = cpu + '%';
+      document.getElementById('net').innerText = (Math.random() * 2 + 0.5).toFixed(1) + ' GB/s';
+      
+      const hashLog = document.getElementById('hash-log');
+      const hash = Array.from({length: 16}, () => Math.floor(Math.random()*16).toString(16)).join('');
+      hashLog.innerHTML = `<div>CRACKED: ${hash}</div>` + hashLog.innerHTML;
+    }, 400);
+
+    window.addEventListener('keydown', (e) => {
+      const modal = document.getElementById('modal');
+      const text = document.getElementById('modal-text');
+      if (e.altKey && e.key === '1') {
+        text.innerText = 'ACCESS GRANTED';
+        text.style.borderColor = '#00ff66';
+        text.style.color = '#00ff66';
+        modal.classList.add('active');
+        setTimeout(() => modal.classList.remove('active'), 2000);
+      } else if (e.altKey && e.key === '2') {
+        text.innerText = 'SYSTEM BREACH DETECTED';
+        text.style.borderColor = '#ff0033';
+        text.style.color = '#ff0033';
+        modal.classList.add('active');
+        setTimeout(() => modal.classList.remove('active'), 2000);
+      }
+    });
+  </script>
+</body>
+</html>
