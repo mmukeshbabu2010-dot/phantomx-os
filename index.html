@@ -20,8 +20,234 @@
   <!-- SVG Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💻</text></svg>">
 
-  <!-- Relative Path Fix for GitHub Pages -->
-  <link rel="stylesheet" href="./style.css">
+  <style>
+    /* CSS Variables & Theme Definitions */
+    :root {
+      --main-color: #00ff66;
+      --bg-color: #050b05;
+      --panel-bg: rgba(5, 20, 10, 0.85);
+      --border-color: #00ff66;
+      --font-family: 'Courier New', Courier, monospace;
+    }
+
+    body.theme-amber {
+      --main-color: #ffb000;
+      --bg-color: #0b0800;
+      --panel-bg: rgba(20, 15, 0, 0.85);
+      --border-color: #ffb000;
+    }
+
+    body.theme-cyberpunk {
+      --main-color: #00f0ff;
+      --bg-color: #0f051d;
+      --panel-bg: rgba(20, 5, 35, 0.85);
+      --border-color: #ff007f;
+    }
+
+    /* Base Layout Setup */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--main-color);
+      font-family: var(--font-family);
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Background Matrix Canvas */
+    #matrix-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      opacity: 0.25;
+    }
+
+    /* Grid Container */
+    .hud-grid {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 280px 1fr 300px;
+      grid-template-rows: auto 1fr auto auto;
+      gap: 12px;
+      padding: 12px;
+      height: 100vh;
+    }
+
+    .hud-header {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 6px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Cyber Panel Windows */
+    .win {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .win-title {
+      background: var(--main-color);
+      color: var(--bg-color);
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .win-body {
+      padding: 10px;
+      font-size: 13px;
+    }
+
+    /* CLI & Log Terminal */
+    #term-log {
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .cli-bar {
+      display: flex;
+      align-items: center;
+      border-top: 1px solid var(--border-color);
+      padding: 6px;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .cli-bar span {
+      margin-right: 6px;
+      font-weight: bold;
+    }
+
+    #cli-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--main-color);
+      font-family: var(--font-family);
+      font-size: 13px;
+      width: 100%;
+    }
+
+    /* CCTV Feeds */
+    .cctv-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cctv-box {
+      position: relative;
+      border: 1px solid var(--border-color);
+      background: #000;
+    }
+
+    .cctv-box canvas {
+      width: 100%;
+      height: 90px;
+      display: block;
+    }
+
+    .cctv-tag {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      font-size: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 2px 4px;
+    }
+
+    /* Bottom Settings Bar */
+    .director-dock {
+      grid-column: 1 / -1;
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .director-dock select, .director-dock input {
+      background: var(--bg-color);
+      color: var(--main-color);
+      border: 1px solid var(--border-color);
+      padding: 2px 4px;
+      font-family: var(--font-family);
+    }
+
+    /* Modal Overlay */
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 99;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .alert-box {
+      font-size: 24px;
+      font-weight: bold;
+      border: 2px solid var(--main-color);
+      padding: 20px 40px;
+      background: var(--bg-color);
+      box-shadow: 0 0 15px var(--main-color);
+      text-align: center;
+    }
+
+    .counter-text {
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    /* Responsive Mobile Layout */
+    @media (max-width: 900px) {
+      body {
+        overflow-y: auto;
+        height: auto;
+      }
+
+      .hud-grid {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+      }
+
+      .win {
+        min-height: 200px;
+      }
+
+      .director-dock {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
 </head>
 <body class="theme-matrix">
   <canvas id="matrix-canvas"></canvas>
