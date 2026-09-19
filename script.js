@@ -1,11 +1,17 @@
 // Web Audio API Synthesizer
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+function ensureAudioResumed() {
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
 function playKeyClick() {
   const sfxOn = document.getElementById('sfx-toggle').checked;
   if (!sfxOn) return;
 
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+  ensureAudioResumed();
   
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
@@ -22,16 +28,18 @@ function playKeyClick() {
   osc.stop(audioCtx.currentTime + 0.04);
 }
 
-function playAlarmTone() {
+function playAlarmTone(freqStart = 440, freqEnd = 880) {
   const sfxOn = document.getElementById('sfx-toggle').checked;
   if (!sfxOn) return;
+
+  ensureAudioResumed();
 
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   
   osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.2);
+  osc.frequency.setValueAtTime(freqStart, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(freqEnd, audioCtx.currentTime + 0.2);
   
   gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
@@ -47,19 +55,21 @@ function playAlarmTone() {
 const canvas = document.getElementById('matrix-canvas');
 const ctx = canvas.getContext('2d');
 
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
 const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
 const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const alphabet = katakana + latin;
 const fontSize = 14;
-let columns = Math.floor(canvas.width / fontSize);
-let rainDrops = Array(columns).fill(1);
+let columns = 0;
+let rainDrops = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  columns = Math.floor(canvas.width / fontSize);
+  rainDrops = Array(columns).fill(1);
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
 function drawMatrix() {
   ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
@@ -109,6 +119,14 @@ function changeTheme(themeName) {
   document.body.className = themeName;
 }
 
+// Attach Theme Selector Dropdown Listener
+const themeSelect = document.getElementById('theme-select');
+if (themeSelect) {
+  themeSelect.addEventListener('change', (e) => {
+    changeTheme(e.target.value);
+  });
+}
+
 // Terminal CLI Parser
 const cliInput = document.getElementById('cli-input');
 const termLog = document.getElementById('term-log');
@@ -151,15 +169,15 @@ function processCommand(cmd) {
     case 'theme':
       if (args[1] === 'amber') {
         changeTheme('theme-amber');
-        document.getElementById('theme-select').value = 'theme-amber';
+        if (themeSelect) themeSelect.value = 'theme-amber';
         appendLog('Theme set to Retro Amber.');
       } else if (args[1] === 'matrix') {
         changeTheme('theme-matrix');
-        document.getElementById('theme-select').value = 'theme-matrix';
+        if (themeSelect) themeSelect.value = 'theme-matrix';
         appendLog('Theme set to Matrix Green.');
       } else if (args[1] === 'cyberpunk') {
         changeTheme('theme-cyberpunk');
-        document.getElementById('theme-select').value = 'theme-cyberpunk';
+        if (themeSelect) themeSelect.value = 'theme-cyberpunk';
         appendLog('Theme set to Cyberpunk Neon.');
       } else {
         appendLog('Usage: theme &lt;matrix | amber | cyberpunk&gt;');
@@ -170,17 +188,22 @@ function processCommand(cmd) {
   }
 }
 
-// Hotkeys Listener
+// Hotkeys Listener (ALT+1 Breach | ALT+2 Lockdown)
 window.addEventListener('keydown', (e) => {
   if (e.altKey && e.key === '1') {
     e.preventDefault();
     triggerBreach();
+  } else if (e.altKey && e.key === '2') {
+    e.preventDefault();
+    triggerLockdown();
   }
 });
 
 function triggerBreach() {
-  playAlarmTone();
+  playAlarmTone(440, 880);
   const modal = document.getElementById('modal');
+  const alertText = document.getElementById('modal-text');
+  alertText.textContent = 'EXTRACTING INTEL...';
   modal.style.display = 'flex';
   
   let downloaded = 0;
@@ -196,4 +219,16 @@ function triggerBreach() {
       }, 1000);
     }
   }, 100);
+}
+
+function triggerLockdown() {
+  playAlarmTone(200, 100);
+  const modal = document.getElementById('modal');
+  const alertText = document.getElementById('modal-text');
+  alertText.textContent = '🚨 SYSTEM BREACH DETECTED - LOCKDOWN ENGAGED 🚨';
+  modal.style.display = 'flex';
+
+  setTimeout(() => {
+    modal.style.display = 'none';
+  }, 3000);
 }
